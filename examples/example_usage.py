@@ -1,33 +1,156 @@
 # examples/example_usage.py
 
-from pyutils import log_calls, retry, time_execution
+"""
+from pyutils.cache import (
+    memoize,
+    ttl_cache,
+    fibonacci,
+    SimpleLRUCache,
+    memoize_with_invalidation,
+)
 
 
-@log_calls
-@time_execution
-def compute_sum(n: int) -> int:
-    total = 0
-    for i in range(n):
-        total += i
-    return total
+# =========================================================
+# BASIC MEMOIZATION
+# =========================================================
+
+@memoize
+def expensive_sum(n: int) -> int:
+
+    print("Computing expensive sum...")
+
+    return sum(range(n))
 
 
-@retry(attempts=3, delay=0.5)
-def unstable_function():
-    import random
+# =========================================================
+# TTL CACHE
+# =========================================================
 
-    if random.random() < 0.7:
-        raise ValueError("Random failure occurred!")
+@ttl_cache(ttl_seconds=5)
+def get_data():
 
-    return "Success!"
+    print("Fetching fresh data...")
+
+    return {"status": "success"}
+
+
+# =========================================================
+# MANUAL INVALIDATION
+# =========================================================
+
+@memoize_with_invalidation
+def expensive_operation(x):
+
+    print("Running expensive operation...")
+
+    return x * 10
+
+
+# =========================================================
+# MAIN EXECUTION
+# =========================================================
+
+if __name__ == "__main__":
+
+    print("\n--- BASIC MEMOIZATION ---")
+    print(expensive_sum(10000))
+    print(expensive_sum(10000))
+
+    print("\n--- TTL CACHE ---")
+    print(get_data())
+    print(get_data())
+
+    print("\n--- LRU CACHE (FIBONACCI) ---")
+    print(fibonacci(35))
+
+    print("\n--- CUSTOM LRU CACHE ---")
+
+    cache = SimpleLRUCache(capacity=3)
+
+    cache.put("A", 1)
+    cache.put("B", 2)
+    cache.put("C", 3)
+
+    cache.display()
+
+    cache.get("A")
+
+    cache.put("D", 4)
+
+    cache.display()
+
+    print("\n--- MANUAL INVALIDATION ---")
+
+    print(expensive_operation(5))
+    print(expensive_operation(5))
+
+    expensive_operation.clear_cache()
+
+    print(expensive_operation(5))
+"""
+
+# examples/example_usage.py
+
+from pyutils.context_managers import (
+    FileManager,
+    file_manager,
+    transaction,
+    multiple_files,
+)
 
 
 if __name__ == "__main__":
-    print("Running compute_sum...")
-    print(compute_sum(10000))
 
-    print("\nRunning unstable_function...")
+    # =====================================================
+    # CLASS-BASED CONTEXT MANAGER
+    # =====================================================
+    print("\n--- CLASS-BASED FILE MANAGER ---")
+
+    with FileManager("sample1.txt", "w") as f:
+        f.write("Hello from class-based context manager\n")
+
+
+    # =====================================================
+    # GENERATOR-BASED CONTEXT MANAGER
+    # =====================================================
+    print("\n--- GENERATOR-BASED FILE MANAGER ---")
+
+    with file_manager("sample2.txt", "w") as f:
+        f.write("Hello from generator-based context manager\n")
+
+
+    # =====================================================
+    # TRANSACTION DEMO (SUCCESS)
+    # =====================================================
+    print("\n--- TRANSACTION SUCCESS ---")
+
+    with transaction("UserUpdate"):
+        print("Updating user...")
+        print("Saving changes...")
+
+
+    # =====================================================
+    # TRANSACTION DEMO (FAILURE)
+    # =====================================================
+    print("\n--- TRANSACTION FAILURE ---")
+
     try:
-        print(unstable_function())
-    except Exception as e:
-        print("Final failure:", e)
+        with transaction("Payment"):
+            print("Charging user...")
+            raise Exception("Payment failed!")
+
+    except Exception:
+        print("Exception handled outside transaction")
+
+
+    # =====================================================
+    # MULTI-FILE CONTEXT MANAGER
+    # =====================================================
+    print("\n--- MULTIPLE FILES (ExitStack) ---")
+
+    with multiple_files("a.txt", "b.txt", "c.txt", mode="w") as files:
+
+        for i, f in enumerate(files):
+            f.write(f"File {i} written via ExitStack\n")
+
+    print("All files safely closed")
