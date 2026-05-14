@@ -87,7 +87,7 @@ if __name__ == "__main__":
     expensive_operation.clear_cache()
 
     print(expensive_operation(5))
-"""
+
 
 # examples/example_usage.py
 
@@ -154,3 +154,122 @@ if __name__ == "__main__":
             f.write(f"File {i} written via ExitStack\n")
 
     print("All files safely closed")
+"""
+# examples/example_usage.py
+
+from pyutils.models import (
+    User,
+    UserFormatter,
+    Account,
+    Product,
+)
+
+from pyutils.collections import UserGroup
+
+
+if __name__ == "__main__":
+
+    # =====================================================
+    # USER MODEL
+    # =====================================================
+
+    print("\n--- USER MODEL ---")
+
+    user = User(
+        1,
+        "Charles",
+        "charles@email.com"
+    )
+
+    print(user)
+
+    # =====================================================
+    # DICT-LIKE ACCESS
+    # =====================================================
+
+    print("\n--- DICT-LIKE ACCESS ---")
+
+    print(user["email"])
+
+    user["name"] = "Charles Shaw"
+
+    print(user)
+
+    # =====================================================
+    # MEMBERSHIP TEST
+    # =====================================================
+
+    print("\n--- MEMBERSHIP TEST ---")
+
+    print("email" in user)
+
+    # =====================================================
+    # SORTING USERS
+    # =====================================================
+
+    print("\n--- SORTING USERS ---")
+
+    users = [
+        User(3, "C", "c@email.com"),
+        User(1, "A", "a@email.com"),
+        User(2, "B", "b@email.com"),
+    ]
+
+    print(sorted(users))
+
+    # =====================================================
+    # CALLABLE OBJECT
+    # =====================================================
+
+    print("\n--- CALLABLE OBJECT ---")
+
+    formatter = UserFormatter()
+
+    print(formatter(user))
+
+    # =====================================================
+    # CUSTOM COLLECTION
+    # =====================================================
+
+    print("\n--- CUSTOM COLLECTION ---")
+
+    group = UserGroup(users)
+
+    for u in group:
+        print(u)
+
+    print(f"Total users: {len(group)}")
+
+    # =====================================================
+    # PROPERTY EXAMPLE
+    # =====================================================
+
+    print("\n--- PROPERTY EXAMPLE ---")
+
+    account = Account("Charles", 1000)
+
+    print(account.balance)
+
+    account.balance = 1500
+
+    print(account.balance)
+
+    # =====================================================
+    # DESCRIPTOR EXAMPLE
+    # =====================================================
+
+    print("\n--- DESCRIPTOR EXAMPLE ---")
+
+    product = Product(
+        "Laptop",
+        2500,
+        5
+    )
+
+    print(product)
+
+    try:
+        product.price = -100
+
+    except ValueError as e:
+        print(e)
